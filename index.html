@@ -1,0 +1,702 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f766e">
+<title>Hearing Aid</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Hearing Aid">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+
+<style>
+  :root{
+    --bg:#eef4f3; --card:#ffffff; --ink:#10211f; --muted:#5d7370; --line:#dbe7e5;
+    --p:#0f766e; --p2:#14b8a6; --soft:#e0f4f1; --warm:#f59e0b; --danger:#dc2626; --live:#16a34a;
+    --shadow:0 10px 30px rgba(15,118,110,.10), 0 2px 6px rgba(16,33,31,.05);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0}
+  body{
+    min-height:100vh;color:var(--ink);font-family:"Segoe UI",Inter,system-ui,-apple-system,Roboto,sans-serif;
+    background:linear-gradient(180deg,#d9efec 0,#eef4f3 260px,#eef4f3 100%) fixed;
+    padding:18px 14px 40px;display:flex;justify-content:center;font-size:16px;
+  }
+  .app{width:100%;max-width:480px}
+  header{display:flex;align-items:center;justify-content:space-between;margin:2px 4px 14px}
+  .brand h1{font-size:1.35rem;margin:0;font-weight:800;letter-spacing:.2px;color:#0b4f4a}
+  .brand div{font-size:.8rem;color:var(--muted)}
+  .pill{display:flex;align-items:center;gap:7px;padding:8px 13px;border-radius:999px;background:#fff;box-shadow:var(--shadow);font-size:.82rem;font-weight:700;color:var(--muted)}
+  .dot{width:10px;height:10px;border-radius:50%;background:#b6c5c3}
+  .live .pill{color:var(--live)} .live .pill .dot{background:var(--live);box-shadow:0 0 0 4px rgba(22,163,74,.2);animation:blink 1.4s infinite}
+  @keyframes blink{50%{box-shadow:0 0 0 8px rgba(22,163,74,0)}}
+
+  .card{background:var(--card);border-radius:26px;padding:18px;margin-bottom:14px;box-shadow:var(--shadow)}
+  .card h2{font-size:.78rem;text-transform:uppercase;letter-spacing:1.3px;color:var(--muted);margin:0 0 12px;font-weight:700}
+
+  .notice{display:none;border-radius:18px;padding:14px 16px;margin-bottom:14px;font-size:.9rem;line-height:1.5}
+  .notice.show{display:block}
+  .notice b{font-size:1rem}
+  .notice.warn{background:#fff7e0;border:1px solid #f6d77a;color:#6b4e00}
+  .notice.err{background:#fee9e9;border:1px solid #f4a8a8;color:#7f1d1d}
+  .notice.info{background:var(--soft);border:1px solid #9fded5;color:#0b4f4a}
+  .notice ol{margin:8px 0 0;padding-left:20px}
+  .notice button{margin-top:10px;padding:10px 16px;border:0;border-radius:12px;font-weight:700;cursor:pointer;background:var(--p);color:#fff;font-size:.9rem}
+
+  /* hero */
+  .hero{text-align:center;padding-bottom:20px;background:linear-gradient(180deg,#fff,#f3fbf9)}
+  .device{position:relative;width:210px;height:150px;margin:0 auto 4px}
+  .device svg{width:100%;height:100%;overflow:visible}
+  .glow{opacity:0;transition:opacity .4s}
+  .live .glow{opacity:1;animation:breathe 2.2s ease-in-out infinite}
+  @keyframes breathe{50%{opacity:.35}}
+  .wave{position:absolute;right:-6px;top:40px;display:flex;gap:4px;align-items:center;height:60px}
+  .wave i{display:block;width:5px;border-radius:4px;background:var(--p2);height:8px;opacity:.25;transition:height .08s}
+  .live .wave i{opacity:1}
+  #power{
+    margin-top:6px;width:100%;padding:20px;border:0;border-radius:22px;cursor:pointer;color:#fff;font-size:1.25rem;font-weight:800;letter-spacing:.5px;
+    background:linear-gradient(135deg,var(--p),var(--p2));box-shadow:0 10px 24px rgba(15,118,110,.35);
+    display:flex;align-items:center;justify-content:center;gap:12px;transition:transform .12s
+  }
+  #power:active{transform:scale(.98)}
+  #power svg{width:28px;height:28px}
+  .live #power{background:linear-gradient(135deg,#dc2626,#f97316);box-shadow:0 10px 24px rgba(220,38,38,.35)}
+  .status{margin-top:12px;font-size:.9rem;color:var(--muted);min-height:1.3em}
+  .status.err{color:var(--danger);font-weight:600}
+
+  /* volume */
+  .vtop{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .vbtn{width:68px;height:68px;border-radius:50%;border:0;background:var(--soft);color:var(--p);font-size:2.2rem;font-weight:700;cursor:pointer;line-height:1;box-shadow:inset 0 0 0 2px #bfe6e0}
+  .vbtn:active{background:#c9ece6;transform:scale(.95)}
+  .vread{text-align:center}
+  .vread b{display:block;font-size:2.6rem;color:var(--p);font-variant-numeric:tabular-nums;line-height:1}
+  .vread span{font-size:.78rem;color:var(--muted)}
+  .bars{display:flex;gap:5px;margin:16px 0 10px;align-items:flex-end;height:34px}
+  .bars i{flex:1;border-radius:4px;background:var(--line);height:30%;transition:.15s}
+  .bars i:nth-child(n){height:calc(20% + var(--n)*8%)}
+  .bars i.on{background:linear-gradient(180deg,var(--p2),var(--p))}
+  .bars i.hot.on{background:linear-gradient(180deg,#fbbf24,#f97316)}
+  .meterrow{display:flex;justify-content:space-between;font-size:.76rem;color:var(--muted);margin:2px 2px 4px}
+  .meter{height:8px;background:var(--line);border-radius:8px;overflow:hidden}
+  .meter>div{height:100%;width:0;background:linear-gradient(90deg,var(--p2),var(--warm),var(--danger));transition:width .06s}
+
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:34px;background:transparent;margin:6px 0 0}
+  input[type=range]::-webkit-slider-runnable-track{height:10px;border-radius:10px;background:linear-gradient(90deg,var(--p2) var(--p,50%),var(--line) var(--p,50%))}
+  input[type=range]::-moz-range-track{height:10px;border-radius:10px;background:var(--line)}
+  input[type=range]::-moz-range-progress{height:10px;border-radius:10px;background:var(--p2)}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:28px;height:28px;border-radius:50%;background:#fff;border:3px solid var(--p);margin-top:-9px;box-shadow:0 3px 10px rgba(0,0,0,.2)}
+  input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:#fff;border:3px solid var(--p)}
+
+  /* mic source */
+  .seg{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .src{border:2px solid var(--line);background:#fff;border-radius:20px;padding:14px 8px;text-align:center;cursor:pointer;transition:.15s;font-weight:700;font-size:.92rem;color:var(--ink)}
+  .src .ic{font-size:1.9rem;display:block;margin-bottom:4px}
+  .src small{display:block;font-weight:500;color:var(--muted);font-size:.72rem;margin-top:2px}
+  .src.active{border-color:var(--p);background:var(--soft);box-shadow:0 4px 14px rgba(15,118,110,.18)}
+  .micnow{margin-top:12px;font-size:.82rem;color:var(--muted);background:#f4f9f8;border-radius:12px;padding:10px 12px;line-height:1.4}
+  .micnow b{color:var(--ink)}
+  .seg.three{grid-template-columns:repeat(3,1fr);gap:8px}
+  .seg.three .src{font-size:.8rem;padding:12px 4px}
+
+  /* programs */
+  .progs{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .prog{border:2px solid var(--line);background:#fff;border-radius:18px;padding:12px 4px;text-align:center;cursor:pointer;font-size:.8rem;font-weight:700;color:var(--ink);transition:.15s}
+  .prog .ic{display:block;font-size:1.6rem;margin-bottom:2px}
+  .prog.active{border-color:var(--p);background:var(--soft)}
+  .eq{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:16px}
+  .eqc{text-align:center}
+  .eqc .v{font-weight:800;color:var(--p);font-size:.9rem;font-variant-numeric:tabular-nums}
+  .eqc .l{font-size:.76rem;color:var(--muted);font-weight:600}
+
+  .row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid var(--line)}
+  .row:last-child{border-bottom:0}
+  .row .t{font-weight:700;font-size:.95rem} .row .d{font-size:.78rem;color:var(--muted);margin-top:2px}
+  .sw{position:relative;width:54px;height:32px;flex:none}
+  .sw input{opacity:0;width:0;height:0}
+  .sw span{position:absolute;inset:0;background:#c6d4d2;border-radius:32px;transition:.2s;cursor:pointer}
+  .sw span:before{content:"";position:absolute;width:26px;height:26px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 2px 5px rgba(0,0,0,.25)}
+  .sw input:checked + span{background:var(--p)}
+  .sw input:checked + span:before{transform:translateX(22px)}
+  .bal{display:flex;justify-content:space-between;font-size:.8rem;font-weight:700;color:var(--muted);margin-top:2px}
+
+  details summary{cursor:pointer;font-weight:700;font-size:.95rem;list-style:none;display:flex;justify-content:space-between;align-items:center}
+  details summary::-webkit-details-marker{display:none}
+  details summary:after{content:"▾";color:var(--muted)}
+  details[open] summary:after{content:"▴"}
+  label.f{display:block;font-size:.78rem;color:var(--muted);margin:14px 0 6px;font-weight:600}
+  select{width:100%;padding:13px;border-radius:14px;background:#f4f9f8;color:var(--ink);border:1px solid var(--line);font-size:.92rem;outline:none}
+  .note{font-size:.76rem;color:var(--muted);margin-top:8px;line-height:1.45}
+  .ghost{width:100%;margin-top:12px;padding:12px;border-radius:14px;border:2px solid var(--line);background:#fff;color:var(--p);cursor:pointer;font-weight:700}
+  footer{text-align:center;font-size:.74rem;color:var(--muted);margin-top:16px;line-height:1.5}
+
+  .install{display:none;align-items:center;justify-content:space-between;gap:12px}
+  .install.show{display:flex}
+  .install b{display:block;font-size:.95rem}
+  .install span{font-size:.78rem;color:var(--muted)}
+  .install button{flex:none;padding:12px 16px;border:0;border-radius:14px;background:var(--p);color:#fff;font-weight:800;cursor:pointer}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <header>
+    <div class="brand"><h1>🦻 Hearing Aid</h1><div>Live sound amplifier</div></div>
+    <div class="pill"><span class="dot"></span><span id="pillText">Off</span></div>
+  </header>
+
+  <div class="card install" id="installCard">
+    <div><b>📲 Install Hearing Aid</b><span id="installHint">Add it to your home screen and open it like an app.</span></div>
+    <button id="installBtn">Install</button>
+  </div>
+
+  <div class="notice warn show">
+    <b>🎧 Put your headphones on first.</b><br>
+    Without headphones the sound loops into the microphone and whistles. Start at a low volume.
+  </div>
+  <div class="notice" id="nProblem"></div>
+
+  <!-- Hero -->
+  <div class="card hero">
+    <div class="device">
+      <svg viewBox="0 0 210 150" fill="none">
+        <defs>
+          <linearGradient id="body" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2dd4bf"/><stop offset="1" stop-color="#0f766e"/></linearGradient>
+        </defs>
+        <!-- glow -->
+        <g class="glow"><circle cx="150" cy="58" r="52" fill="#14b8a6" opacity=".18"/><circle cx="150" cy="58" r="36" fill="#14b8a6" opacity=".18"/></g>
+        <!-- ear hook -->
+        <path d="M120 40 C100 6 52 8 40 52 C32 84 50 116 78 128" stroke="#d9c3b0" stroke-width="9" stroke-linecap="round"/>
+        <!-- body -->
+        <g transform="rotate(-22 150 58)">
+          <rect x="105" y="42" width="92" height="38" rx="19" fill="url(#body)"/>
+          <rect x="112" y="48" width="78" height="9" rx="4.5" fill="#fff" opacity=".28"/>
+          <circle cx="170" cy="68" r="3.4" fill="#073b37"/><circle cx="182" cy="68" r="3.4" fill="#073b37"/>
+          <circle cx="126" cy="64" r="5" fill="#fff" opacity=".9"/>
+        </g>
+        <!-- receiver -->
+        <circle cx="80" cy="130" r="11" fill="#d9c3b0"/><circle cx="80" cy="130" r="5" fill="#8f735c"/>
+      </svg>
+      <div class="wave" id="wave"><i></i><i></i><i></i><i></i><i></i></div>
+    </div>
+    <button id="power" aria-label="Start or stop">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v10"/><path d="M18.4 6.6a9 9 0 1 1-12.8 0"/></svg>
+      <span id="powerText">TURN ON</span>
+    </button>
+    <div class="status" id="status">Tap Turn On and allow the microphone</div>
+  </div>
+
+  <!-- Volume -->
+  <div class="card">
+    <h2>Volume</h2>
+    <div class="vtop">
+      <button class="vbtn" id="vDown" aria-label="Lower volume">−</button>
+      <div class="vread"><b id="volVal">150%</b><span>amplification</span></div>
+      <button class="vbtn" id="vUp" aria-label="Raise volume">+</button>
+    </div>
+    <div class="bars" id="bars"></div>
+    <input type="range" id="vol" min="0" max="400" value="150">
+    <div class="meterrow" style="margin-top:12px"><span>Sound level</span><span id="inDb">–</span></div>
+    <div class="meter"><div id="meterBar"></div></div>
+  </div>
+
+  <!-- Mic source -->
+  <div class="card">
+    <h2>Microphone source</h2>
+    <div class="seg">
+      <button class="src active" id="srcPhone" data-m="phone"><span class="ic">📱</span>Phone mic<small>Built-in microphone</small></button>
+      <button class="src" id="srcHead" data-m="headset"><span class="ic">🎧</span>Headset mic<small>Wired or Bluetooth</small></button>
+    </div>
+    <div class="micnow" id="micNow">Active microphone: <b>not started</b></div>
+  </div>
+
+  <!-- Output -->
+  <div class="card">
+    <h2>Sound output (earbuds)</h2>
+    <div class="seg three">
+      <button class="src" id="out_bt"><span class="ic">🔵</span>Bluetooth<small>Earbuds</small></button>
+      <button class="src" id="out_wired"><span class="ic">🎧</span>Wired<small>Handsfree</small></button>
+      <button class="src active" id="out_auto"><span class="ic">📶</span>Auto<small>Phone decides</small></button>
+    </div>
+    <div class="micnow" id="outNow">Output: <b>your phone's current audio route</b></div>
+    <button class="ghost" id="testBtn">🔊 Play test beep</button>
+    <audio id="outEl" playsinline></audio>
+  </div>
+
+  <!-- Programs -->
+  <div class="card">
+    <h2>Listening program</h2>
+    <div class="progs">
+      <button class="prog active" data-p="everyday"><span class="ic">🏠</span>Everyday</button>
+      <button class="prog" data-p="speech"><span class="ic">💬</span>Conversation</button>
+      <button class="prog" data-p="tv"><span class="ic">📺</span>TV</button>
+      <button class="prog" data-p="quiet"><span class="ic">🤫</span>Soft sounds</button>
+      <button class="prog" data-p="outdoor"><span class="ic">🌳</span>Outdoors</button>
+      <button class="prog" data-p="music"><span class="ic">🎵</span>Music</button>
+    </div>
+    <div class="eq">
+      <div class="eqc"><div class="v" id="bassVal">0 dB</div><input type="range" id="bass" min="-12" max="12" value="0"><div class="l">Low</div></div>
+      <div class="eqc"><div class="v" id="midVal">0 dB</div><input type="range" id="mid" min="-12" max="12" value="0"><div class="l">Voices</div></div>
+      <div class="eqc"><div class="v" id="trebVal">0 dB</div><input type="range" id="treb" min="-12" max="18" value="0"><div class="l">High</div></div>
+    </div>
+  </div>
+
+  <!-- Comfort -->
+  <div class="card">
+    <h2>Comfort</h2>
+    <div class="row"><div><div class="t">Stop whistling</div><div class="d" id="fbInfo">Automatically cuts feedback</div></div><label class="sw"><input type="checkbox" id="guard" checked><span></span></label></div>
+    <div class="row"><div><div class="t">Echo cancellation</div><div class="d">Reduces whistling from headphones</div></div><label class="sw"><input type="checkbox" id="aec" checked><span></span></label></div>
+    <div class="row"><div><div class="t">Reduce background noise</div><div class="d">Makes voices clearer</div></div><label class="sw"><input type="checkbox" id="ns" checked><span></span></label></div>
+    <div class="row"><div><div class="t">Even out loud and soft</div><div class="d">Auto volume leveling</div></div><label class="sw"><input type="checkbox" id="comp" checked><span></span></label></div>
+    <div class="row"><div><div class="t">Same sound in both ears</div><div class="d">Mono</div></div><label class="sw"><input type="checkbox" id="mono"><span></span></label></div>
+    <div style="padding-top:12px">
+      <div class="row" style="border:0;padding:0"><div class="t">Left / Right balance</div><div class="d" id="balVal">Center</div></div>
+      <input type="range" id="bal" min="-100" max="100" value="0">
+      <div class="bal"><span>L</span><span>R</span></div>
+    </div>
+  </div>
+
+  <!-- Advanced devices -->
+  <div class="card">
+    <details>
+      <summary>More devices</summary>
+      <label class="f">Choose a specific microphone</label><select id="inSel"></select>
+      <label class="f">Headphones / output</label><select id="outSel"></select>
+      <label class="f">Output method</label>
+      <select id="method"><option value="compat">Earbuds compatible (recommended)</option><option value="direct">Low delay (direct)</option></select>
+      <div class="note" id="outNote"></div>
+      <button class="ghost" id="refresh">↻ Refresh devices</button>
+    </details>
+  </div>
+
+  <footer>This is a sound amplifier, not a medical device.<br>Wired headphones give the least delay. Bluetooth adds about 100–200 ms.</footer>
+</div>
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  let ctx, stream, nodes = {}, running = false, raf, level = 0, mode = 'phone', custom = false;
+
+  const PRESETS = {
+    everyday:{vol:150,bass:0,mid:2,treb:2},
+    speech:{vol:220,bass:-6,mid:6,treb:6},
+    tv:{vol:200,bass:-2,mid:4,treb:4},
+    quiet:{vol:300,bass:-4,mid:6,treb:8},
+    outdoor:{vol:170,bass:-10,mid:4,treb:2},
+    music:{vol:160,bass:3,mid:0,treb:3}
+  };
+  const HEADSET_RE = /head(set|phone)|bluetooth|\bbt\b|airpod|buds|wired|usb|earphone|hands-?free|earbud/i;
+
+  /* ---------- small helpers ---------- */
+  const store = {
+    get(k, d){ try { const v = localStorage.getItem('ha_' + k); return v === null ? d : JSON.parse(v); } catch(e){ return d; } },
+    set(k, v){ try { localStorage.setItem('ha_' + k, JSON.stringify(v)); } catch(e){} }
+  };
+  const setStatus = (t, err) => { $('status').textContent = t; $('status').className = 'status' + (err ? ' err' : ''); };
+  const problem = (html, kind) => { const n = $('nProblem'); n.className = 'notice show ' + (kind || 'err'); n.innerHTML = html; };
+  const clearProblem = () => { $('nProblem').className = 'notice'; $('nProblem').innerHTML = ''; };
+  const fillRange = el => el.style.setProperty('--p', ((el.value - el.min) / (el.max - el.min) * 100) + '%');
+
+  // volume bars
+  const bars = $('bars');
+  for (let i = 1; i <= 10; i++){ const b = document.createElement('i'); b.style.setProperty('--n', i); if (i > 7) b.className = 'hot'; bars.appendChild(b); }
+
+  function updateLabels(){
+    const v = +$('vol').value;
+    $('volVal').textContent = v + '%';
+    [...bars.children].forEach((b, i) => b.classList.toggle('on', i < Math.round(v / 40)));
+    $('bassVal').textContent = $('bass').value + ' dB';
+    $('midVal').textContent = $('mid').value + ' dB';
+    $('trebVal').textContent = $('treb').value + ' dB';
+    const bl = +$('bal').value;
+    $('balVal').textContent = bl === 0 ? 'Center' : (bl < 0 ? 'Left ' + (-bl) + '%' : 'Right ' + bl + '%');
+    document.querySelectorAll('input[type=range]').forEach(fillRange);
+  }
+
+  /* ---------- environment / permission ---------- */
+  function envProblem(){
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+      if (!window.isSecureContext){
+        return `<b>Microphone blocked: page is not secure</b><br>Browsers only allow the microphone on https:// pages or localhost.
+          <ol><li>Open this file in Chrome, Edge or Safari, not inside a chat preview.</li><li>Or put it on an https site such as GitHub Pages or Netlify.</li></ol>`;
+      }
+      return `<b>Microphone not supported</b><br>Please use an up-to-date Chrome, Edge, Firefox or Safari.`;
+    }
+    let framed = false; try { framed = window.self !== window.top; } catch(e){ framed = true; }
+    if (framed) return `<b>Opened inside a preview</b><br>Previews block the microphone, so no permission pop-up can appear.<ol><li>Download the file.</li><li>Open it in your browser app.</li></ol>`;
+    return null;
+  }
+  async function permState(){
+    try { if (navigator.permissions) return (await navigator.permissions.query({name:'microphone'})).state; } catch(e){}
+    return 'unknown';
+  }
+  const deniedHelp = () => `<b>Microphone access is blocked</b>
+    <ol><li>Tap the 🔒 icon next to the address bar.</li><li>Open Permissions and set Microphone to Allow.</li><li>Reload the page.</li></ol>
+    <button id="retryBtn">Try again</button>`;
+  const wireRetry = () => { const b = $('retryBtn'); if (b) b.onclick = () => { clearProblem(); start(); }; };
+
+  /* ---------- devices ---------- */
+  let inputs = [];
+  async function listDevices(){
+    try{
+      const devs = await navigator.mediaDevices.enumerateDevices();
+      inputs = devs.filter(d => d.kind === 'audioinput');
+      const fill = (sel, list, kind) => {
+        const prev = sel.value; sel.innerHTML = '';
+        list.forEach((d, i) => {
+          const o = document.createElement('option'); o.value = d.deviceId;
+          o.textContent = d.label || (kind === 'in' ? 'Microphone ' : 'Output ') + (i + 1);
+          sel.appendChild(o);
+        });
+        if ([...sel.options].some(o => o.value === prev)) sel.value = prev;
+      };
+      fill($('inSel'), inputs, 'in');
+      outputs = devs.filter(d => d.kind === 'audiooutput');
+      fill($('outSel'), outputs, 'out');
+    }catch(e){}
+  }
+  function pickDevice(m){
+    const real = inputs.filter(d => d.deviceId !== 'default' && d.deviceId !== 'communications' && d.label);
+    if (m === 'headset') return real.find(d => HEADSET_RE.test(d.label)) || null;
+    return real.find(d => !HEADSET_RE.test(d.label)) || null;
+  }
+  const outEl = $('outEl');
+  const sinkOK = () => !!(outEl.setSinkId || (typeof AudioContext !== 'undefined' && 'setSinkId' in AudioContext.prototype));
+  const BT_RE = /bluetooth|\bbt\b|airpod|buds|wireless/i;
+  const WIRED_RE = /wired|headset|headphone|handsfree|hands-free|usb|analog|3\.5|earphone/i;
+  const MOBILE = /Android|iPhone|iPad/i.test(navigator.userAgent);
+  let outKind = 'auto', outputs = [], runAt = 0, sawSignal = false, warnedSilent = false;
+
+  function setOutKind(k){
+    outKind = k; store.set('out', k === 'custom' ? 'auto' : k);
+    ['bt','wired','auto'].forEach(x => $('out_' + x).classList.toggle('active', x === k));
+  }
+  function outId(){
+    if (outKind === 'custom') return $('outSel').value || '';
+    if (outKind === 'bt'){ const d = outputs.find(d => d.label && BT_RE.test(d.label)); return d ? d.deviceId : null; }
+    if (outKind === 'wired'){ const d = outputs.find(d => d.label && !BT_RE.test(d.label) && WIRED_RE.test(d.label)); return d ? d.deviceId : null; }
+    return '';
+  }
+  function showOutNow(a, b){ $('outNow').innerHTML = a + (b ? '<br>' + b : ''); }
+
+  // send processed sound to the output: via an <audio> element (best for earbuds) or directly
+  function routeOutput(){
+    const n = nodes; if (!n.pan) return;
+    try { n.pan.disconnect(); } catch(e){}
+    if ($('method').value === 'compat'){
+      n.pan.connect(n.dest);
+      outEl.srcObject = n.dest.stream;
+      outEl.play().catch(() => setStatus('Sound is blocked. Tap Turn Off, then Turn On again.', true));
+    } else {
+      outEl.pause(); outEl.srcObject = null;
+      n.pan.connect(ctx.destination);
+    }
+  }
+
+  async function setOutput(){
+    const id = outId(); let msg = '';
+    if (id === null){
+      msg = outKind === 'bt'
+        ? 'This browser does not list Bluetooth earbuds. Check they are connected in Bluetooth settings. Android usually sends sound to them automatically. If a wired handsfree is plugged in, unplug it, because wired takes priority.'
+        : 'This browser does not list a wired handsfree. Plug it in firmly. Android usually sends sound to it automatically.';
+    }
+    let applied = false;
+    if (id !== null){
+      try{
+        if ($('method').value === 'compat' && outEl.setSinkId){ await outEl.setSinkId(id); applied = true; }
+        else if (ctx && ctx.setSinkId){ await ctx.setSinkId(id); applied = true; }
+      }catch(e){}
+    }
+    const lab = (outputs.find(d => d.deviceId === id) || {}).label;
+    showOutNow(applied && lab ? 'Output: <b>' + lab + '</b>' : 'Output: <b>your phone\'s current audio route</b>', msg);
+  }
+
+  async function testSound(){
+    let c = ctx, temp = false;
+    if (!c){ c = new (window.AudioContext || window.webkitAudioContext)(); temp = true; }
+    const o = c.createOscillator(), g = c.createGain(); o.frequency.value = 660; g.gain.value = .15; o.connect(g);
+    if (temp){
+      g.connect(c.destination);
+      try{ const id = outId(); if (id && c.setSinkId) await c.setSinkId(id); }catch(e){}
+    } else g.connect(nodes.pan);
+    o.start(); setTimeout(() => { try{ o.stop(); }catch(e){} if (temp) c.close(); }, 700);
+  }
+  function setMode(m, isCustom){
+    mode = m; custom = !!isCustom; store.set('mode', m);
+    $('srcPhone').classList.toggle('active', !custom && m === 'phone');
+    $('srcHead').classList.toggle('active', !custom && m === 'headset');
+  }
+  function showMicNow(note){
+    const t = stream && stream.getAudioTracks()[0];
+    $('micNow').innerHTML = 'Active microphone: <b>' + (t ? (t.label || 'Default microphone') : 'not started') + '</b>' + (note ? '<br>' + note : '');
+  }
+
+  /* ---------- audio graph ---------- */
+  function applySettings(){
+    if (!nodes.gain) return;
+    const t = ctx.currentTime, n = nodes;
+    n.gain.gain.setTargetAtTime($('vol').value / 100, t, .03);
+    n.low.gain.setTargetAtTime(+$('bass').value, t, .03);
+    n.mid.gain.setTargetAtTime(+$('mid').value, t, .03);
+    n.high.gain.setTargetAtTime(+$('treb').value, t, .03);
+    n.pan.pan.setTargetAtTime(+$('bal').value / 100, t, .03);
+    const c = n.comp;
+    if ($('comp').checked){ c.threshold.value=-40; c.knee.value=20; c.ratio.value=4; c.attack.value=.005; c.release.value=.25; }
+    else { c.threshold.value=0; c.knee.value=0; c.ratio.value=1; }
+    n.mono.channelCount = $('mono').checked ? 1 : 2;
+    n.mono.channelCountMode = $('mono').checked ? 'explicit' : 'max';
+  }
+
+  function buildGraph(){
+    ctx = new (window.AudioContext || window.webkitAudioContext)({latencyHint:'interactive'});
+    const n = nodes;
+    const mk = (type, f, q) => { const x = ctx.createBiquadFilter(); x.type = type; x.frequency.value = f; if (q) x.Q.value = q; return x; };
+    n.source = ctx.createMediaStreamSource(stream);
+    n.hp = mk('highpass', 80);
+    n.low = mk('lowshelf', 250);
+    n.mid = mk('peaking', 1800, .8);
+    n.high = mk('highshelf', 4000);
+    n.lp = mk('lowpass', 7000);
+    n.notches = Array.from({length:6}, () => mk('notch', 20000, 35));
+    n.comp = ctx.createDynamicsCompressor();
+    n.duck = ctx.createGain();
+    n.gain = ctx.createGain();
+    n.limiter = ctx.createDynamicsCompressor();
+    n.limiter.threshold.value=-6; n.limiter.knee.value=0; n.limiter.ratio.value=20; n.limiter.attack.value=.001; n.limiter.release.value=.1;
+    n.mono = ctx.createGain(); n.mono.channelInterpretation = 'speakers';
+    n.pan = ctx.createStereoPanner();
+    n.analyser = ctx.createAnalyser(); n.analyser.fftSize = 1024;
+    n.fb = ctx.createAnalyser(); n.fb.fftSize = 4096; n.fb.smoothingTimeConstant = .2;
+
+    let prev = n.source;
+    [n.hp, n.low, n.mid, n.high, n.lp, ...n.notches, n.comp, n.duck, n.gain, n.limiter, n.mono, n.pan].forEach(x => { prev.connect(x); prev = x; });
+    n.dest = ctx.createMediaStreamDestination();
+    routeOutput();
+    n.limiter.connect(n.analyser); n.limiter.connect(n.fb);
+    n.nSlot = 0; n.cand = -1; n.candCount = 0; n.blocked = 0;
+    n.guardTimer = setInterval(guardTick, 40);
+    applySettings();
+  }
+
+  /* whistle guard: find a steady narrow peak and notch it */
+  function guardTick(){
+    const n = nodes; if (!n.fb || !$('guard').checked) return;
+    const N = n.fb.frequencyBinCount, d = new Float32Array(N); n.fb.getFloatFrequencyData(d);
+    const hz = ctx.sampleRate / n.fb.fftSize;
+    const lo = Math.floor(400 / hz), hi = Math.min(N - 12, Math.floor(8000 / hz));
+    let pk = lo, pv = -200;
+    for (let i = lo; i < hi; i++) if (d[i] > pv){ pv = d[i]; pk = i; }
+    let s = 0, c = 0;
+    for (let i = pk - 10; i <= pk + 10; i++){ if (Math.abs(i - pk) > 3 && i >= 0){ s += d[i]; c++; } }
+    const prom = pv - s / c;
+    if (pv > -50 && prom > 14){
+      if (Math.abs(pk - n.cand) <= 2) n.candCount++; else { n.cand = pk; n.candCount = 1; }
+      if (n.candCount >= 4){
+        const f = pk * hz;
+        if (!n.notches.some(x => Math.abs(x.frequency.value - f) < f * .04)){
+          n.notches[n.nSlot % n.notches.length].frequency.setValueAtTime(f, ctx.currentTime);
+          n.nSlot++; n.blocked++;
+          $('fbInfo').textContent = 'Blocked a whistle at ' + (f / 1000).toFixed(2) + ' kHz (' + n.blocked + ' total)';
+        }
+        if (pv > -25 && prom > 20){
+          const t = ctx.currentTime;
+          n.duck.gain.cancelScheduledValues(t); n.duck.gain.setValueAtTime(.25, t); n.duck.gain.linearRampToValueAtTime(1, t + .6);
+        }
+        n.candCount = 0;
+      }
+    } else n.candCount = Math.max(0, n.candCount - 1);
+  }
+
+  /* ---------- level meter + animated bars ---------- */
+  const waveBars = [...$('wave').children];
+  function draw(){
+    let db = -100;
+    if (running && nodes.analyser){
+      const buf = new Float32Array(nodes.analyser.fftSize); nodes.analyser.getFloatTimeDomainData(buf);
+      let s = 0; for (let i = 0; i < buf.length; i++) s += buf[i] * buf[i];
+      const rms = Math.sqrt(s / buf.length); db = rms > 0 ? 20 * Math.log10(rms) : -100;
+      level = Math.max(0, Math.min(1, (db + 60) / 60));
+    } else level *= .9;
+    $('meterBar').style.width = (level * 100) + '%';
+    $('inDb').textContent = running && db > -100 ? db.toFixed(0) + ' dB' : '–';
+    if (running){
+      if (db > -80) sawSignal = true;
+      if (sawSignal && warnedSilent){ clearProblem(); warnedSilent = false; }
+      if (!sawSignal && !warnedSilent && performance.now() - runAt > 4000){
+        warnedSilent = true;
+        problem('<b>No sound from the microphone</b><br>Try these:<ol><li>Choose <b>Phone mic</b> above.</li><li>Turn off Echo cancellation and Reduce background noise.</li><li>Close other apps that use the microphone (calls, voice recorder).</li></ol>', 'warn');
+      }
+    }
+    const t = performance.now() / 160;
+    waveBars.forEach((b, i) => { b.style.height = (running ? 8 + level * 52 * (.55 + .45 * Math.sin(t + i * 1.3)) : 8) + 'px'; });
+    raf = requestAnimationFrame(draw);
+  }
+
+  /* ---------- start / stop ---------- */
+  function getStream(id){
+    return navigator.mediaDevices.getUserMedia({audio:{
+      deviceId: id ? {exact:id} : undefined,
+      echoCancellation:$('aec').checked, noiseSuppression:$('ns').checked, autoGainControl:false, channelCount:1
+    }});
+  }
+
+  async function start(){
+    clearProblem();
+    const ep = envProblem();
+    if (ep){ problem(ep); setStatus('Cannot start', true); return; }
+    const st = await permState();
+    if (st === 'denied'){ problem(deniedHelp()); wireRetry(); setStatus('Microphone blocked', true); return; }
+    if (st !== 'granted') problem('<b>🎤 Waiting for permission</b><br>Choose <b>Allow</b> in the browser pop-up.', 'info');
+    try{
+      setStatus('Requesting microphone…');
+      const chosen = custom ? $('inSel').value : '';
+      try { stream = await getStream(chosen); }
+      catch(e){ if (e.name === 'OverconstrainedError') stream = await navigator.mediaDevices.getUserMedia({audio:true}); else throw e; }
+      clearProblem();
+      await listDevices();
+
+      let note = '';
+      if (!custom){
+        const want = pickDevice(mode);
+        const cur = stream.getAudioTracks()[0].getSettings().deviceId;
+        if (want && want.deviceId !== cur){
+          stream.getTracks().forEach(t => t.stop());
+          stream = await getStream(want.deviceId);
+        } else if (!want){
+          note = mode === 'phone'
+            ? 'No separate phone microphone found. Using the default one.'
+            : 'No headset microphone found. Connect a headset, then tap Refresh in More devices.';
+        }
+      }
+      const tid = stream.getAudioTracks()[0].getSettings().deviceId;
+      if (tid && [...$('inSel').options].some(o => o.value === tid)) $('inSel').value = tid;
+      showMicNow(note);
+
+      buildGraph(); await setOutput(); await ctx.resume();
+      running = true; runAt = performance.now(); sawSignal = false; warnedSilent = false;
+      $('app').classList.add('live'); $('pillText').textContent = 'Live';
+      $('powerText').textContent = 'TURN OFF';
+      setStatus('Listening… sound is going to your headphones');
+    }catch(e){
+      if (e.name === 'NotAllowedError' || e.name === 'SecurityError'){ problem(deniedHelp()); wireRetry(); setStatus('Microphone blocked', true); }
+      else if (e.name === 'NotFoundError'){ problem('<b>No microphone found</b><br>Connect a microphone or headset and tap Refresh in More devices.'); setStatus('No microphone', true); }
+      else if (e.name === 'NotReadableError'){ problem('<b>Microphone is busy</b><br>Another app is using it. Close that app and try again.'); setStatus('Microphone busy', true); }
+      else { problem('<b>Error</b><br>' + e.message); setStatus('Error', true); }
+      stop(true);
+    }
+  }
+
+  function stop(silent){
+    if (nodes.guardTimer) clearInterval(nodes.guardTimer);
+    $('fbInfo').textContent = 'Automatically cuts feedback';
+    if (stream) stream.getTracks().forEach(t => t.stop());
+    try { outEl.pause(); outEl.srcObject = null; } catch(e){}
+    if (ctx) ctx.close();
+    stream = null; ctx = null; nodes = {}; running = false;
+    $('app').classList.remove('live'); $('pillText').textContent = 'Off';
+    $('powerText').textContent = 'TURN ON';
+    if (!silent){ setStatus('Stopped'); showMicNow(); }
+  }
+  async function restart(){ if (running){ stop(true); await start(); } }
+
+  /* ---------- events ---------- */
+  $('power').addEventListener('click', () => running ? stop() : start());
+  const bump = d => { $('vol').value = Math.max(0, Math.min(400, +$('vol').value + d)); updateLabels(); applySettings(); store.set('vol', +$('vol').value); };
+  $('vDown').addEventListener('click', () => bump(-20));
+  $('vUp').addEventListener('click', () => bump(20));
+
+  ['vol','bass','mid','treb','bal'].forEach(id => $(id).addEventListener('input', () => {
+    updateLabels(); applySettings();
+    if (['bass','mid','treb'].includes(id)) document.querySelectorAll('.prog').forEach(c => c.classList.remove('active'));
+  }));
+  ['comp','mono'].forEach(id => $(id).addEventListener('change', applySettings));
+  ['ns','aec'].forEach(id => $(id).addEventListener('change', restart));
+
+  document.querySelectorAll('.src').forEach(b => b.addEventListener('click', () => { setMode(b.dataset.m, false); restart(); if (!running) showMicNow('Will use the ' + (b.dataset.m === 'phone' ? 'phone' : 'headset') + ' microphone when you turn on.'); }));
+  $('inSel').addEventListener('change', () => { setMode(mode, true); restart(); });
+  $('outSel').addEventListener('change', () => { setOutKind('custom'); setOutput(); });
+  ['bt','wired','auto'].forEach(k => $('out_' + k).addEventListener('click', () => { setOutKind(k); setOutput(); }));
+  $('method').addEventListener('change', () => { store.set('method', $('method').value); if (running){ routeOutput(); setOutput(); } });
+  $('testBtn').addEventListener('click', testSound);
+  $('refresh').addEventListener('click', listDevices);
+  if (navigator.mediaDevices && navigator.mediaDevices.addEventListener) navigator.mediaDevices.addEventListener('devicechange', async () => { await listDevices(); });
+
+  document.querySelectorAll('.prog').forEach(btn => btn.addEventListener('click', () => {
+    const p = PRESETS[btn.dataset.p];
+    $('vol').value = p.vol; $('bass').value = p.bass; $('mid').value = p.mid; $('treb').value = p.treb;
+    document.querySelectorAll('.prog').forEach(c => c.classList.toggle('active', c === btn));
+    updateLabels(); applySettings();
+  }));
+
+  $('outNote').textContent = sinkOK()
+    ? 'Pick your wired or Bluetooth headphones above.'
+    : 'This browser cannot choose an output. Sound goes to the system default: connect your headphones and set them as the default output.';
+
+  // restore saved choices
+  setMode(store.get('mode', 'phone'), false);
+  setOutKind(store.get('out', 'auto'));
+  $('method').value = store.get('method', 'compat');
+  if (MOBILE){ $('aec').checked = false; } // echo cancellation can re-route sound away from earbuds on phones
+  $('vol').value = store.get('vol', 150);
+  const early = envProblem(); if (early) problem(early);
+  else permState().then(s => { if (s === 'denied'){ problem(deniedHelp()); wireRetry(); } });
+
+  updateLabels(); listDevices(); draw();
+})();
+</script>
+<script>
+/* ---------- PWA: service worker, install prompt, keep-awake ---------- */
+(() => {
+  const $ = id => document.getElementById(id);
+  const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+
+  if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')){
+    window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+  }
+
+  let deferred = null;
+  window.addEventListener('beforeinstallprompt', e => {
+    e.preventDefault(); deferred = e;
+    $('installCard').classList.add('show');
+  });
+  $('installBtn').addEventListener('click', async () => {
+    if (!deferred) return;
+    deferred.prompt();
+    await deferred.userChoice.catch(() => {});
+    deferred = null; $('installCard').classList.remove('show');
+  });
+  window.addEventListener('appinstalled', () => $('installCard').classList.remove('show'));
+
+  // iPhone/iPad Safari has no install prompt: show the manual steps
+  if (!standalone && /iPhone|iPad|iPod/i.test(navigator.userAgent)){
+    $('installHint').textContent = 'Tap the Share button, then "Add to Home Screen".';
+    $('installBtn').style.display = 'none';
+    $('installCard').classList.add('show');
+  }
+
+  // keep the screen on and show a media notification while the hearing aid is live
+  let lock = null;
+  async function setLive(on){
+    try{
+      if (on && 'wakeLock' in navigator){ lock = await navigator.wakeLock.request('screen'); }
+      else if (lock){ await lock.release(); lock = null; }
+    }catch(e){}
+    try{
+      if ('mediaSession' in navigator){
+        if (on) navigator.mediaSession.metadata = new MediaMetadata({title:'Hearing Aid', artist:'Listening live', artwork:[{src:'icon-512.png', sizes:'512x512', type:'image/png'}]});
+        navigator.mediaSession.playbackState = on ? 'playing' : 'none';
+      }
+    }catch(e){}
+  }
+  let wasLive = false;
+  new MutationObserver(() => {
+    const live = $('app').classList.contains('live');
+    if (live !== wasLive){ wasLive = live; setLive(live); }
+  }).observe($('app'), {attributes:true, attributeFilter:['class']});
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && wasLive) setLive(true); });
+})();
+</script>
+</body>
+</html>
